@@ -105,10 +105,17 @@ export default function Navbar() {
         <div className="flex items-center justify-around h-20">
           {isAuthenticated ? (
             <>
-              <NavIconButton icon={Map} label="Mapa" to="/mapa" onClick={() => {}} />
-              <NavIconButton icon={Rss} label="Feed" to="/feed" onClick={() => {}} />
-              <NavIconButton icon={Trophy} label="Rankings" to="/rankings" onClick={() => {}} />
-              <NavIconButton icon={User} label="Perfil" to="/perfil" onClick={() => {}} />
+              <NavIconButton icon={Map} label="Mapa" to="/mapa" />
+              <NavIconButton icon={Rss} label="Feed" to="/feed" />
+              <NavIconButton icon={Trophy} label="Rankings" to="/rankings" />
+              <NavIconButton icon={User} label="Perfil" to="/perfil" />
+              <button
+                onClick={handleLogout}
+                className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-slate-400 hover:text-red-400 transition-colors duration-200"
+              >
+                <LogOut size={24} />
+                <span className="text-xs font-medium">Salir</span>
+              </button>
             </>
           ) : (
             <Link

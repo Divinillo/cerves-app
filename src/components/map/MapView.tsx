@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Link } from 'react-router-dom';
-import { Plus, Search, MapPin, Star } from 'lucide-react';
+import { Plus, Search, MapPin, Star, Crosshair } from 'lucide-react';
 import QuickBeerLog from './QuickBeerLog';
 import type { QuickBeerData } from './QuickBeerLog';
-import type { MapLayerMouseEvent, MapLayerTouchEvent } from 'react-map-gl/maplibre';
+import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 interface Bar {
   id: string;
@@ -16,11 +16,7 @@ interface Bar {
   beer_count?: number;
 }
 
-interface MapViewProps {
-  onAddBar?: () => void;
-}
-
-export default function MapView({ onAddBar }: MapViewProps) {
+export default function MapView() {
   const [bars, setBars] = useState<Bar[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null);
@@ -33,6 +29,10 @@ export default function MapView({ onAddBar }: MapViewProps) {
     bearing: 0,
   });
 
+  // User's live geolocation
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const watchIdRef = useRef<number | null>(null);
+
   // Quick beer log state
   const [quickLogOpen, setQuickLogOpen] = useState(false);
   const [quickLogBar, setQuickLogBar] = useState<{ id?: string; name: string } | null>(null);
@@ -40,19 +40,36 @@ export default function MapView({ onAddBar }: MapViewProps) {
   const [newPinCoords, setNewPinCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [quickLogLoading, setQuickLogLoading] = useState(false);
 
-  // Long press detection
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressCoords = useRef<{ x: number; y: number } | null>(null);
+  // Double click detection
+  const lastClickTime = useRef<number>(0);
+  const lastClickCoords = useRef<{ x: number; y: number } | null>(null);
 
+  // Track user location continuously
   useEffect(() => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        setViewState((prev) => ({
-          ...prev,
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        }));
-      });
+      // Get initial position and center map
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+          setUserLocation(loc);
+          setViewState((prev) => ({
+            ...prev,
+            latitude: loc.lat,
+            longitude: loc.lng,
+          }));
+        },
+        () => {}, // silently fail
+        { enableHighAccuracy: true }
+      );
+
+      // Watch position for live updates
+      watchIdRef.current = navigator.geolocation.watchPosition(
+        (position) => {
+          setUserLocation({ lat: position.coords.latitude, lng: position.coords.longitude });
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+      );
     }
 
     // TODO: Fetch bars from Supabase
@@ -84,6 +101,12 @@ export default function MapView({ onAddBar }: MapViewProps) {
     ];
     setBars(mockBars);
     setIsLoading(false);
+
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
   }, []);
 
   const filteredBars = bars.filter((bar) =>
@@ -99,53 +122,49 @@ export default function MapView({ onAddBar }: MapViewProps) {
     setQuickLogOpen(true);
   }, []);
 
-  // Long press on map to create new bar + beer
-  const handleMapMouseDown = useCallback((e: MapLayerMouseEvent) => {
-    longPressCoords.current = { x: e.point.x, y: e.point.y };
-    longPressTimer.current = setTimeout(() => {
-      const coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
-      setNewPinCoords(coords);
-      setQuickLogCoords(coords);
-      setQuickLogBar({ name: '' });
-      setQuickLogOpen(true);
-    }, 600);
-  }, []);
+  // Double click/tap on map to drop pin and open quick log
+  const handleMapClick = useCallback((e: MapLayerMouseEvent) => {
+    const now = Date.now();
+    const timeDiff = now - lastClickTime.current;
+    const prevCoords = lastClickCoords.current;
 
-  const handleMapMouseUp = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  }, []);
+    lastClickTime.current = now;
+    lastClickCoords.current = { x: e.point.x, y: e.point.y };
 
-  const handleMapMouseMove = useCallback((e: MapLayerMouseEvent) => {
-    // Cancel long press if finger/mouse moved too far
-    if (longPressTimer.current && longPressCoords.current) {
-      const dx = e.point.x - longPressCoords.current.x;
-      const dy = e.point.y - longPressCoords.current.y;
-      if (Math.sqrt(dx * dx + dy * dy) > 10) {
-        clearTimeout(longPressTimer.current);
-        longPressTimer.current = null;
+    // Check if it's a double click (within 400ms and close proximity)
+    if (timeDiff < 400 && prevCoords) {
+      const dx = e.point.x - prevCoords.x;
+      const dy = e.point.y - prevCoords.y;
+      if (Math.sqrt(dx * dx + dy * dy) < 30) {
+        // It's a double tap — open quick log at this location
+        const coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+        setNewPinCoords(coords);
+        setQuickLogCoords(coords);
+        setQuickLogBar({ name: '' });
+        setQuickLogOpen(true);
+        // Reset to prevent triple-tap
+        lastClickTime.current = 0;
+        lastClickCoords.current = null;
       }
     }
   }, []);
 
-  // Handle touch events for mobile long press
-  const handleTouchStart = useCallback((e: MapLayerTouchEvent) => {
-    // Extract the first touch point for long press
-    longPressCoords.current = { x: e.point.x, y: e.point.y };
-    longPressTimer.current = setTimeout(() => {
-      const coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+  // FAB: add beer at current location
+  const handleAddBeerHere = useCallback(() => {
+    if (userLocation) {
+      setNewPinCoords(userLocation);
+      setQuickLogCoords(userLocation);
+      setQuickLogBar({ name: '' });
+      setQuickLogOpen(true);
+    } else {
+      // Fallback: use map center
+      const coords = { lat: viewState.latitude, lng: viewState.longitude };
       setNewPinCoords(coords);
       setQuickLogCoords(coords);
       setQuickLogBar({ name: '' });
       setQuickLogOpen(true);
-    }, 600);
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    handleMapMouseUp();
-  }, [handleMapMouseUp]);
+    }
+  }, [userLocation, viewState.latitude, viewState.longitude]);
 
   // Submit quick beer log
   const handleQuickLogSubmit = useCallback(async (data: QuickBeerData) => {
@@ -188,20 +207,32 @@ export default function MapView({ onAddBar }: MapViewProps) {
       <Map
         {...viewState}
         onMove={(evt) => setViewState(evt.viewState)}
-        onMouseDown={handleMapMouseDown}
-        onMouseUp={handleMapMouseUp}
-        onMouseMove={handleMapMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onClick={handleMapClick}
         mapStyle="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
         style={{ width: '100%', height: '100%' }}
         attributionControl={false}
+        doubleClickZoom={false}
       >
         <NavigationControl position="bottom-right" showCompass={true} />
         <GeolocateControl
           position="bottom-right"
           trackUserLocation={true}
+          showAccuracyCircle={true}
         />
+
+        {/* User location pulse marker */}
+        {userLocation && (
+          <Marker
+            longitude={userLocation.lng}
+            latitude={userLocation.lat}
+            anchor="center"
+          >
+            <div className="relative">
+              <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg z-10 relative" />
+              <div className="absolute inset-0 w-4 h-4 bg-blue-400 rounded-full animate-ping opacity-40" />
+            </div>
+          </Marker>
+        )}
 
         {filteredBars.map((bar) => (
           <Marker
@@ -314,12 +345,13 @@ export default function MapView({ onAddBar }: MapViewProps) {
       {/* Hint toast - shows briefly */}
       <MapHint />
 
-      {/* Add Bar FAB */}
+      {/* Add Beer Here FAB - uses current geolocation */}
       <button
-        onClick={onAddBar}
-        className="absolute bottom-24 md:bottom-8 right-4 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-full p-4 shadow-xl transition-all duration-200 transform hover:scale-110"
+        onClick={handleAddBeerHere}
+        className="absolute bottom-24 md:bottom-8 right-4 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-5 py-4 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
       >
-        <Plus size={28} />
+        <Crosshair size={22} />
+        <span className="text-sm">Cerveza aquí</span>
       </button>
 
       {/* Loading State */}
@@ -379,7 +411,7 @@ function MapHint() {
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
       }`}
     >
-      Mantén pulsado en el mapa para registrar una cerveza
+      Doble toque en el mapa o pulsa "Cerveza aquí"
     </div>
   );
 }
