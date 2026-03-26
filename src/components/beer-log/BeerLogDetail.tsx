@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Heart, MapPin, Share2, Plus } from 'lucide-react';
+import { Heart, MapPin, Plus, Share2 } from 'lucide-react';
 import Rating from '../shared/Rating';
 import TagBadge from '../shared/TagBadge';
 
@@ -50,86 +50,93 @@ export default function BeerLogDetail({ data }: BeerLogDetailProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Photo */}
-        <div className="relative aspect-video">
+    <div className="max-w-3xl mx-auto p-6">
+      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        {/* Photo Hero */}
+        <div className="relative aspect-video group overflow-hidden">
           <img
             src={beerLog.photoUrl}
             alt={beerLog.beerName}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+
+          {/* Favorite Button */}
           <button
             onClick={() => setIsFavorite(!isFavorite)}
-            className="absolute top-4 right-4 bg-white/80 hover:bg-white rounded-full p-3 transition"
+            className="absolute top-6 right-6 bg-white/90 hover:bg-white rounded-full p-3 transition-all shadow-lg transform hover:scale-110"
           >
             <Heart
               size={24}
-              className={isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-400'}
+              className={isFavorite ? 'fill-red-500 text-red-500' : 'text-slate-600'}
             />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-8 space-y-8">
           {/* Header */}
           <div>
-            <h1 className="text-4xl font-bold text-slate-800 mb-2">
+            <h1 className="text-4xl font-bold text-slate-800 mb-4">
               {beerLog.beerName}
             </h1>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-lg bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-semibold">
+              <span className="text-lg bg-amber-100 text-amber-800 px-4 py-2 rounded-full font-bold">
                 {beerLog.style}
               </span>
-              <span className="text-sm bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+              <span className="text-sm bg-slate-100 text-slate-700 px-4 py-2 rounded-full font-semibold">
                 {beerLog.isDraft ? '🍻 Grifo' : '🍾 Botella'}
               </span>
-              <span className="text-sm bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+              <span className="text-sm bg-slate-100 text-slate-700 px-4 py-2 rounded-full font-semibold">
                 {beerLog.size}
               </span>
             </div>
           </div>
 
-          {/* Rating and Price */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-amber-50 rounded-lg p-4">
-              <p className="text-sm text-slate-600 mb-2">Puntuación</p>
-              <div className="flex items-center gap-2">
-                <Rating value={beerLog.rating} readonly size="lg" />
-                <span className="text-2xl font-bold text-amber-600">
+          {/* Rating and Price Grid */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+              <p className="text-sm text-slate-600 mb-3 font-bold uppercase tracking-wide">Puntuación</p>
+              <div className="flex items-center gap-3">
+                <Rating value={Math.round(beerLog.rating)} readonly size="lg" />
+                <span className="text-4xl font-bold text-amber-600">
                   {beerLog.rating.toFixed(1)}
                 </span>
               </div>
             </div>
-            <div className="bg-amber-50 rounded-lg p-4">
-              <p className="text-sm text-slate-600 mb-2">Precio</p>
-              <p className="text-3xl font-bold text-amber-600">
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200">
+              <p className="text-sm text-slate-600 mb-3 font-bold uppercase tracking-wide">Precio</p>
+              <p className="text-4xl font-bold text-amber-600">
                 {beerLog.price.toFixed(2)}€
               </p>
             </div>
           </div>
 
           {/* Bar Info */}
-          <div className="border-t border-slate-200 pt-4">
-            <h2 className="font-bold text-slate-800 mb-2">Bar</h2>
-            <div className="flex items-start gap-3 bg-slate-50 rounded-lg p-4">
-              <MapPin size={20} className="text-amber-500 flex-shrink-0 mt-1" />
-              <div>
-                <h3 className="font-semibold text-slate-800">{beerLog.barName}</h3>
-                <p className="text-sm text-slate-600">{beerLog.location}</p>
+          <div className="border-t-2 border-slate-200 pt-8">
+            <h2 className="text-xl font-bold text-slate-800 mb-4">📍 Dónde lo probé</h2>
+            <div className="flex items-start gap-4 bg-slate-50 rounded-2xl p-6 border border-slate-200">
+              <MapPin size={24} className="text-amber-600 flex-shrink-0 mt-1" />
+              <div className="flex-1">
+                <h3 className="font-bold text-slate-800 text-lg">{beerLog.barName}</h3>
+                <p className="text-slate-600 mt-1">{beerLog.location}</p>
               </div>
             </div>
           </div>
 
           {/* Review */}
-          <div className="border-t border-slate-200 pt-4">
-            <h2 className="font-bold text-slate-800 mb-2">Comentario</h2>
-            <p className="text-slate-700 leading-relaxed">{beerLog.review}</p>
-          </div>
+          {beerLog.review && (
+            <div className="border-t-2 border-slate-200 pt-8">
+              <h2 className="text-xl font-bold text-slate-800 mb-4">💬 Mi comentario</h2>
+              <blockquote className="border-l-4 border-amber-500 pl-6 py-3 bg-slate-50 rounded-r-lg text-slate-700 italic leading-relaxed">
+                {beerLog.review}
+              </blockquote>
+            </div>
+          )}
 
           {/* Tags */}
           {beerLog.tags.length > 0 && (
-            <div className="border-t border-slate-200 pt-4">
-              <h2 className="font-bold text-slate-800 mb-2">Etiquetas</h2>
+            <div className="border-t-2 border-slate-200 pt-8">
+              <h2 className="text-xl font-bold text-slate-800 mb-4">🏷️ Etiquetas</h2>
               <div className="flex flex-wrap gap-2">
                 {beerLog.tags.map((tag) => (
                   <TagBadge key={tag} label={tag} variant="secondary" />
@@ -139,25 +146,31 @@ export default function BeerLogDetail({ data }: BeerLogDetailProps) {
           )}
 
           {/* User Info */}
-          <div className="border-t border-slate-200 pt-4 flex items-center gap-4">
-            <img
-              src={beerLog.userAvatar}
-              alt={beerLog.userName}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            <div className="flex-1">
-              <p className="font-semibold text-slate-800">{beerLog.userName}</p>
+          <div className="border-t-2 border-slate-200 pt-8 flex items-center gap-4 bg-amber-50 rounded-2xl p-6">
+            {beerLog.userAvatar ? (
+              <img
+                src={beerLog.userAvatar}
+                alt={beerLog.userName}
+                className="w-16 h-16 rounded-full object-cover border-2 border-amber-500"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-amber-500 flex items-center justify-center text-white font-bold text-xl">
+                {beerLog.userName[0]}
+              </div>
+            )}
+            <div>
+              <p className="font-bold text-slate-800 text-lg">{beerLog.userName}</p>
               <p className="text-sm text-slate-600">@{beerLog.userId}</p>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="grid grid-cols-2 gap-3 border-t border-slate-200 pt-6">
-            <button className="flex items-center justify-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-800 px-4 py-2 rounded-lg font-semibold transition">
+          <div className="grid md:grid-cols-2 gap-4 border-t-2 border-slate-200 pt-8">
+            <button className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-100 to-orange-100 hover:from-amber-200 hover:to-orange-200 text-amber-800 px-6 py-3 rounded-xl font-bold transition-all">
               <Plus size={20} />
               Añadir a lista
             </button>
-            <button className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2 rounded-lg font-semibold transition">
+            <button className="flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-6 py-3 rounded-xl font-bold transition-all">
               <Share2 size={20} />
               Compartir
             </button>

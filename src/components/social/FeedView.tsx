@@ -52,13 +52,13 @@ export default function FeedView({ activities }: FeedViewProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-6">
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-md p-4 sticky top-20 z-40">
-        <div className="flex gap-4 border-b border-slate-200">
+      <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-20 z-40 backdrop-blur-xl bg-white/95">
+        <div className="flex items-center gap-6 border-b-2 border-slate-200 pb-4">
           <button
             onClick={() => setTab('following')}
-            className={`px-4 py-2 font-semibold transition border-b-2 ${
+            className={`px-4 py-2 font-bold text-lg transition-all -mb-4 border-b-4 ${
               tab === 'following'
                 ? 'border-amber-500 text-amber-600'
                 : 'border-transparent text-slate-600 hover:text-slate-800'
@@ -68,7 +68,7 @@ export default function FeedView({ activities }: FeedViewProps) {
           </button>
           <button
             onClick={() => setTab('public')}
-            className={`px-4 py-2 font-semibold transition border-b-2 ${
+            className={`px-4 py-2 font-bold text-lg transition-all -mb-4 border-b-4 ${
               tab === 'public'
                 ? 'border-amber-500 text-amber-600'
                 : 'border-transparent text-slate-600 hover:text-slate-800'
@@ -80,10 +80,10 @@ export default function FeedView({ activities }: FeedViewProps) {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="ml-auto text-slate-600 hover:text-amber-600 transition disabled:opacity-50"
+            className="ml-auto text-slate-600 hover:text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition disabled:opacity-50"
           >
             <RefreshCw
-              size={20}
+              size={24}
               className={isRefreshing ? 'animate-spin' : ''}
             />
           </button>
@@ -92,17 +92,18 @@ export default function FeedView({ activities }: FeedViewProps) {
 
       {/* Activities */}
       {displayActivities.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {displayActivities.map((activity) => (
             <ActivityCard key={activity.id} activity={activity} />
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <p className="text-slate-500 text-lg">
+        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <p className="text-5xl mb-4">🍺</p>
+          <p className="text-slate-700 text-xl font-semibold">
             No hay actividad en tu feed aún
           </p>
-          <p className="text-slate-400 text-sm mt-2">
+          <p className="text-slate-500 text-sm mt-3">
             Sigue usuarios para ver sus actividades
           </p>
         </div>
@@ -110,7 +111,7 @@ export default function FeedView({ activities }: FeedViewProps) {
 
       {/* Load More */}
       {displayActivities.length > 0 && (
-        <button className="w-full border border-amber-500 hover:bg-amber-50 text-amber-600 py-2 rounded-lg font-semibold transition">
+        <button className="w-full border-2 border-amber-500 hover:bg-amber-50 text-amber-600 py-3 rounded-xl font-bold transition-all">
           Cargar más
         </button>
       )}

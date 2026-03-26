@@ -82,114 +82,114 @@ export default function RankingsView({ items }: RankingsViewProps) {
   const displayItems = items || (tab === 'beers' ? mockBeers : mockBars);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-lg shadow-lg p-8 text-white">
-        <div className="flex items-center gap-3">
-          <Trophy size={32} />
-          <h1 className="text-3xl font-bold">Rankings</h1>
+      <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl shadow-2xl p-10 text-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 mix-blend-overlay" style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px)'}}></div>
+        <div className="relative">
+          <div className="flex items-center gap-4 mb-3">
+            <Trophy size={40} />
+            <h1 className="text-4xl font-bold">Rankings</h1>
+          </div>
+          <p className="text-white/80 text-lg">
+            Descubre las mejores cervezas y bares de la comunidad
+          </p>
         </div>
-        <p className="text-amber-100 mt-2">
-          Descubre las mejores cervezas y bares de la comunidad
-        </p>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-md p-4 flex gap-4 border-b border-slate-200">
-        <button
-          onClick={() => setTab('beers')}
-          className={`px-6 py-2 font-semibold transition rounded-lg ${
-            tab === 'beers'
-              ? 'bg-amber-500 text-white'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-        >
-          Cervezas
-        </button>
-        <button
-          onClick={() => setTab('bars')}
-          className={`px-6 py-2 font-semibold transition rounded-lg ${
-            tab === 'bars'
-              ? 'bg-amber-500 text-white'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-        >
-          Bares
-        </button>
+      {/* Tabs and Filters */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="flex flex-col md:flex-row gap-4 md:items-center">
+          <div className="flex gap-3">
+            <button
+              onClick={() => setTab('beers')}
+              className={`px-6 py-3 font-bold rounded-xl transition-all ${
+                tab === 'beers'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Cervezas
+            </button>
+            <button
+              onClick={() => setTab('bars')}
+              className={`px-6 py-3 font-bold rounded-xl transition-all ${
+                tab === 'bars'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              Bares
+            </button>
+          </div>
 
-        {/* Style Filter - Only for beers */}
-        {tab === 'beers' && (
-          <select
-            value={styleFilter}
-            onChange={(e) => setStyleFilter(e.target.value)}
-            className="ml-auto px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-          >
-            {BEER_STYLES.map((style) => (
-              <option key={style} value={style}>
-                {style}
-              </option>
-            ))}
-          </select>
-        )}
+          {/* Style Filter - Only for beers */}
+          {tab === 'beers' && (
+            <select
+              value={styleFilter}
+              onChange={(e) => setStyleFilter(e.target.value)}
+              className="md:ml-auto px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:border-amber-500 transition-all"
+            >
+              {BEER_STYLES.map((style) => (
+                <option key={style} value={style}>
+                  {style}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
       {/* Rankings List */}
-      <div className="space-y-3">
-        {displayItems.map((item, index) => (
-          <div
-            key={item.id}
-            className="bg-white rounded-lg shadow-md p-4 flex items-center gap-4 hover:shadow-lg transition"
-          >
-            {/* Position */}
-            <div className="flex-shrink-0">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${
-                  index === 0
-                    ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
-                    : index === 1
-                      ? 'bg-gradient-to-r from-slate-300 to-slate-400'
-                      : index === 2
-                        ? 'bg-gradient-to-r from-orange-300 to-orange-400'
-                        : 'bg-slate-400'
-                }`}
-              >
-                {item.position}
+      <div className="space-y-4">
+        {displayItems.map((item, index) => {
+          const medalEmojis = ['🥇', '🥈', '🥉'];
+          const medal = medalEmojis[index] || '🔹';
+
+          return (
+            <div
+              key={item.id}
+              className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all p-6 flex items-center gap-6 group hover:translate-x-1"
+            >
+              {/* Position Medal */}
+              <div className="flex-shrink-0 text-4xl">
+                {medal}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-slate-800 text-lg truncate">{item.name}</h3>
+                {('brewery' in item) && (
+                  <p className="text-sm text-slate-600">{(item as any).brewery}</p>
+                )}
+                <p className="text-xs text-slate-500 mt-1">
+                  <strong>{item.reviewCount}</strong> reseñas
+                </p>
+              </div>
+
+              {/* Rating */}
+              <div className="flex-shrink-0 text-right">
+                <div className="flex items-center gap-1 justify-end mb-2">
+                  <Rating
+                    value={Math.round(item.rating)}
+                    readonly
+                    size="sm"
+                  />
+                </div>
+                <p className="text-2xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
+                  {item.rating.toFixed(1)}
+                </p>
               </div>
             </div>
-
-            {/* Info */}
-            <div className="flex-1">
-              <h3 className="font-bold text-slate-800">{item.name}</h3>
-              {('brewery' in item) && (
-                <p className="text-sm text-slate-600">{(item as any).brewery}</p>
-              )}
-              <p className="text-xs text-slate-500">
-                {item.reviewCount} reseñas
-              </p>
-            </div>
-
-            {/* Rating */}
-            <div className="flex-shrink-0 text-right">
-              <div className="flex items-center gap-2 justify-end mb-1">
-                <Rating
-                  value={Math.round(item.rating)}
-                  readonly
-                  size="sm"
-                />
-              </div>
-              <p className="text-xl font-bold text-amber-600">
-                {item.rating.toFixed(1)}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Empty State */}
       {displayItems.length === 0 && (
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <Trophy size={48} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-slate-500 text-lg">No hay rankings disponibles</p>
+        <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          <div className="text-6xl mb-4">🏆</div>
+          <p className="text-slate-700 text-xl font-semibold">No hay rankings disponibles</p>
         </div>
       )}
     </div>

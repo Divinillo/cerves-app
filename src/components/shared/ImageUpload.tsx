@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X } from 'lucide-react';
+import { X, Camera } from 'lucide-react';
 
 interface ImageUploadProps {
   onFileSelected: (file: File) => void;
@@ -55,19 +55,21 @@ export default function ImageUpload({ onFileSelected, currentUrl, className = ''
   return (
     <div className={className}>
       {preview ? (
-        <div className="relative w-full">
+        <div className="relative w-full group">
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-48 object-cover rounded-lg"
+            className="w-full h-56 object-cover rounded-2xl shadow-lg"
           />
-          <button
-            type="button"
-            onClick={clearPreview}
-            className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition"
-          >
-            <X size={20} />
-          </button>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 rounded-2xl transition-all flex items-center justify-center">
+            <button
+              type="button"
+              onClick={clearPreview}
+              className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-full transition-all shadow-lg hover:shadow-xl opacity-0 group-hover:opacity-100"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </div>
       ) : (
         <div
@@ -75,11 +77,14 @@ export default function ImageUpload({ onFileSelected, currentUrl, className = ''
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className="w-full border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-amber-500 transition"
+          className="w-full border-2 border-dashed border-slate-300 hover:border-amber-500 rounded-2xl p-12 text-center cursor-pointer transition-all bg-gradient-to-br from-slate-50 to-amber-50 hover:from-amber-50 hover:to-orange-50"
         >
-          <Upload className="mx-auto mb-2 text-slate-400" size={32} />
-          <p className="text-slate-600 font-medium">Arrastra una imagen o haz clic para seleccionar</p>
-          <p className="text-slate-400 text-sm">PNG, JPG hasta 5MB</p>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
+            <Camera className="text-amber-600" size={32} />
+          </div>
+          <p className="text-slate-800 font-bold mb-1">Selecciona una foto</p>
+          <p className="text-slate-600 mb-4">Arrastra y suelta o haz clic para seleccionar</p>
+          <p className="text-slate-400 text-sm">PNG, JPG, WebP - máx. 5MB</p>
         </div>
       )}
 

@@ -65,11 +65,11 @@ export default function AddBarModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={resetForm} title="Añadir un nuevo bar">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <Modal isOpen={isOpen} onClose={resetForm} title="Añadir un nuevo bar" size="lg">
+      <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
             Nombre del bar *
           </label>
           <input
@@ -77,14 +77,14 @@ export default function AddBarModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ej: La Cervecería del Centro"
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:border-amber-500 focus:bg-white transition-all"
             required
           />
         </div>
 
         {/* Address */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
             Dirección
           </label>
           <input
@@ -92,14 +92,14 @@ export default function AddBarModal({
             value={address}
             onChange={(e) => setAddress(e.target.value)}
             placeholder="Calle Principal 123"
-            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:border-amber-500 focus:bg-white transition-all"
           />
         </div>
 
         {/* Location */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
               Latitud *
             </label>
             <input
@@ -107,12 +107,12 @@ export default function AddBarModal({
               value={latitude}
               onChange={(e) => setLatitude(parseFloat(e.target.value))}
               step="0.0001"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:border-amber-500 focus:bg-white transition-all"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">
               Longitud *
             </label>
             <input
@@ -120,33 +120,30 @@ export default function AddBarModal({
               value={longitude}
               onChange={(e) => setLongitude(parseFloat(e.target.value))}
               step="0.0001"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:border-amber-500 focus:bg-white transition-all"
               required
             />
           </div>
         </div>
 
-        <p className="text-xs text-slate-500 flex items-center gap-1">
-          <MapPin size={14} />
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2 text-xs text-amber-700 font-medium">
+          <MapPin size={16} />
           Haz clic en el mapa para establecer la ubicación
-        </p>
+        </div>
 
         {/* Photo */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-bold text-slate-700 mb-3 uppercase tracking-wide">
             Foto del bar
           </label>
-          <ImageUpload
-            onFileSelected={setPhoto}
-            className="w-full"
-          />
+          <ImageUpload onFileSelected={setPhoto} />
         </div>
 
         {/* Submit */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-6 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-400 text-white py-2 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+          className="w-full mt-8 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 disabled:from-slate-400 disabled:to-slate-500 text-white py-3 rounded-xl font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
         >
           <Save size={20} />
           {isLoading ? 'Guardando...' : 'Guardar bar'}

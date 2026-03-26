@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { UserCheck, UserPlus, Edit } from 'lucide-react';
+import { UserCheck, UserPlus, Edit, Trophy } from 'lucide-react';
 import BeerLogCard from '../beer-log/BeerLogCard';
 import BadgeCard from '../badges/BadgeCard';
 
@@ -60,163 +60,177 @@ export default function ProfileView({ data }: ProfileViewProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-6">
-      {/* Profile Header */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
-            <img
-              src={profile.avatarUrl}
-              alt={profile.username}
-              className="w-32 h-32 rounded-full object-cover border-4 border-amber-500"
-            />
-          </div>
+    <div className="w-full space-y-8">
+      {/* Profile Header with Banner */}
+      <div className="relative">
+        {/* Banner */}
+        <div className="h-48 md:h-64 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-2xl shadow-xl overflow-hidden">
+          <div className="absolute inset-0 opacity-20 mix-blend-overlay" style={{backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.05) 10px, rgba(255,255,255,.05) 20px)'}}></div>
+        </div>
 
-          {/* Info */}
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold text-slate-800">{profile.username}</h1>
-            <p className="text-slate-600 mt-1">{profile.bio}</p>
+        {/* Profile Card Overlapping Banner */}
+        <div className="max-w-4xl mx-auto px-6 -mt-24 relative z-10">
+          <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
+              {/* Avatar */}
+              <div className="flex-shrink-0">
+                <img
+                  src={profile.avatarUrl}
+                  alt={profile.username}
+                  className="w-40 h-40 rounded-2xl object-cover border-4 border-amber-500 shadow-xl"
+                />
+              </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mt-4">
-              <div>
-                <p className="text-2xl font-bold text-amber-600">
-                  {profile.beerCount}
-                </p>
-                <p className="text-sm text-slate-600">Cervezas</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-amber-600">
-                  {profile.barCount}
-                </p>
-                <p className="text-sm text-slate-600">Bares</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-amber-600">
-                  {profile.followersCount}
-                </p>
-                <p className="text-sm text-slate-600">Seguidores</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-amber-600">
-                  {profile.followingCount}
-                </p>
-                <p className="text-sm text-slate-600">Siguiendo</p>
-              </div>
-            </div>
+              {/* Info */}
+              <div className="flex-1">
+                <h1 className="text-4xl font-bold text-slate-800 mb-2">{profile.username}</h1>
+                <p className="text-lg text-slate-600 mb-6">{profile.bio}</p>
 
-            {/* Actions */}
-            <div className="flex gap-2 mt-6">
-              {profile.isOwnProfile ? (
-                <button className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white px-6 py-2 rounded-lg font-semibold transition">
-                  <Edit size={20} />
-                  Editar perfil
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsFollowing(!isFollowing)}
-                  className={`flex items-center gap-2 px-6 py-2 rounded-lg font-semibold transition ${
-                    isFollowing
-                      ? 'bg-slate-200 hover:bg-slate-300 text-slate-800'
-                      : 'bg-amber-500 hover:bg-amber-600 text-white'
-                  }`}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck size={20} />
-                      Siguiendo
-                    </>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-4 gap-4 mb-8">
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-600">{profile.beerCount}</p>
+                    <p className="text-xs text-slate-600 mt-1 font-medium">CERVEZAS</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-600">{profile.barCount}</p>
+                    <p className="text-xs text-slate-600 mt-1 font-medium">BARES</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-600">{profile.followersCount}</p>
+                    <p className="text-xs text-slate-600 mt-1 font-medium">SEGUIDORES</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-amber-600">{profile.followingCount}</p>
+                    <p className="text-xs text-slate-600 mt-1 font-medium">SIGUIENDO</p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  {profile.isOwnProfile ? (
+                    <button className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg">
+                      <Edit size={20} />
+                      Editar perfil
+                    </button>
                   ) : (
-                    <>
-                      <UserPlus size={20} />
-                      Seguir
-                    </>
+                    <button
+                      onClick={() => setIsFollowing(!isFollowing)}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                        isFollowing
+                          ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300'
+                          : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-lg'
+                      }`}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserCheck size={20} />
+                          Siguiendo
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={20} />
+                          Seguir
+                        </>
+                      )}
+                    </button>
                   )}
-                </button>
-              )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Badges */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-bold text-slate-800 mb-4">Logros</h2>
-        <div className="flex overflow-x-auto gap-4 pb-2">
-          {profile.badges.map((badge) => (
-            <div key={badge.id} className="flex-shrink-0">
-              <BadgeCard badge={badge} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <div className="max-w-4xl mx-auto px-6">
 
-      {/* Tabs */}
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <div className="flex border-b border-slate-200 mb-6">
-          <button
-            onClick={() => setActiveTab('beers')}
-            className={`px-4 py-2 font-semibold transition border-b-2 ${
-              activeTab === 'beers'
-                ? 'border-amber-500 text-amber-600'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            Mis Cervezas ({profile.beerCount})
-          </button>
-          <button
-            onClick={() => setActiveTab('favorites')}
-            className={`px-4 py-2 font-semibold transition border-b-2 ${
-              activeTab === 'favorites'
-                ? 'border-amber-500 text-amber-600'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            Favoritos ({profile.favorites.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('lists')}
-            className={`px-4 py-2 font-semibold transition border-b-2 ${
-              activeTab === 'lists'
-                ? 'border-amber-500 text-amber-600'
-                : 'border-transparent text-slate-600 hover:text-slate-800'
-            }`}
-          >
-            Listas
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'beers' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {profile.beers.map((beer) => (
-              <BeerLogCard
-                key={beer.id}
-                id={beer.id}
-                beerName={beer.beerName}
-                style={beer.style}
-                barName={beer.barName}
-                rating={beer.rating}
-                price={beer.price}
-                size={beer.size}
-                isDraft={beer.isDraft}
-              />
+        {/* Badges Section */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <Trophy size={28} className="text-amber-600" />
+            <h2 className="text-2xl font-bold text-slate-800">Logros</h2>
+          </div>
+          <div className="flex overflow-x-auto gap-4 pb-2 -mx-4 px-4">
+            {profile.badges.map((badge) => (
+              <div key={badge.id} className="flex-shrink-0">
+                <BadgeCard badge={badge} />
+              </div>
             ))}
           </div>
-        )}
+        </div>
 
-        {activeTab === 'favorites' && (
-          <div className="text-center py-8">
-            <p className="text-slate-500">No hay favoritos aún</p>
+        {/* Tabs */}
+        <div className="bg-white rounded-2xl shadow-lg p-8">
+          <div className="border-b-2 border-slate-200 mb-8 flex gap-8">
+            <button
+              onClick={() => setActiveTab('beers')}
+              className={`px-4 py-3 font-bold text-lg transition-all border-b-4 -mb-2 ${
+                activeTab === 'beers'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Mis Cervezas
+              <span className="ml-2 text-sm font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
+                {profile.beerCount}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('favorites')}
+              className={`px-4 py-3 font-bold text-lg transition-all border-b-4 -mb-2 ${
+                activeTab === 'favorites'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Favoritos
+              <span className="ml-2 text-sm font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
+                {profile.favorites.length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('lists')}
+              className={`px-4 py-3 font-bold text-lg transition-all border-b-4 -mb-2 ${
+                activeTab === 'lists'
+                  ? 'border-amber-500 text-amber-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-800'
+              }`}
+            >
+              Listas
+            </button>
           </div>
-        )}
 
-        {activeTab === 'lists' && (
-          <div className="text-center py-8">
-            <p className="text-slate-500">No hay listas creadas</p>
-          </div>
-        )}
+          {/* Tab Content */}
+          {activeTab === 'beers' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {profile.beers.map((beer) => (
+                <BeerLogCard
+                  key={beer.id}
+                  id={beer.id}
+                  beerName={beer.beerName}
+                  style={beer.style}
+                  barName={beer.barName}
+                  rating={beer.rating}
+                  price={beer.price}
+                  size={beer.size}
+                  isDraft={beer.isDraft}
+                />
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'favorites' && (
+            <div className="text-center py-16">
+              <p className="text-slate-500 text-lg">No hay favoritos aún</p>
+            </div>
+          )}
+
+          {activeTab === 'lists' && (
+            <div className="text-center py-16">
+              <p className="text-slate-500 text-lg">No hay listas creadas</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
