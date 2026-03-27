@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, MapPin, Clock } from 'lucide-react';
+import { Heart, MapPin, Clock, Pencil } from 'lucide-react';
 import Rating from '../shared/Rating';
 import TagBadge from '../shared/TagBadge';
 
@@ -21,6 +21,7 @@ interface BeerLogCardProps {
   timeAgo?: string;
   isFavorite?: boolean;
   onFavoriteToggle?: (isFavorite: boolean) => void;
+  onEdit?: () => void;
 }
 
 export default function BeerLogCard({
@@ -40,6 +41,7 @@ export default function BeerLogCard({
   timeAgo = 'Hace 2 horas',
   isFavorite = false,
   onFavoriteToggle,
+  onEdit,
 }: BeerLogCardProps) {
   const [isLiked, setIsLiked] = useState(isFavorite);
 
@@ -69,19 +71,32 @@ export default function BeerLogCard({
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
 
-        {/* Favorite Button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            handleFavorite();
-          }}
-          className="absolute top-3 right-3 bg-white/90 hover:bg-white rounded-full p-2 transition-all shadow-lg transform hover:scale-110"
-        >
-          <Heart
-            size={20}
-            className={isLiked ? 'fill-red-500 text-red-500' : 'text-slate-600'}
-          />
-        </button>
+        {/* Action Buttons */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          {onEdit && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                onEdit();
+              }}
+              className="bg-white/90 hover:bg-white rounded-full p-2 transition-all shadow-lg transform hover:scale-110"
+            >
+              <Pencil size={18} className="text-amber-600" />
+            </button>
+          )}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              handleFavorite();
+            }}
+            className="bg-white/90 hover:bg-white rounded-full p-2 transition-all shadow-lg transform hover:scale-110"
+          >
+            <Heart
+              size={20}
+              className={isLiked ? 'fill-red-500 text-red-500' : 'text-slate-600'}
+            />
+          </button>
+        </div>
       </div>
 
       <div className="p-5 space-y-4">

@@ -25,6 +25,7 @@ export interface SavedBeer {
 interface BeerContextType {
   beers: SavedBeer[];
   addBeer: (beer: Omit<SavedBeer, 'id' | 'createdAt'>) => SavedBeer;
+  updateBeer: (beerId: string, updates: Partial<Omit<SavedBeer, 'id' | 'createdAt' | 'userId'>>) => void;
   getPublicBeers: () => SavedBeer[];
   getUserBeers: (userId: string) => SavedBeer[];
   getFavorites: (userId: string) => SavedBeer[];
@@ -145,6 +146,10 @@ export function BeerProvider({ children }: { children: React.ReactNode }) {
     return newBeer;
   }, []);
 
+  const updateBeer = useCallback((beerId: string, updates: Partial<Omit<SavedBeer, 'id' | 'createdAt' | 'userId'>>) => {
+    setBeers((prev) => prev.map((b) => b.id === beerId ? { ...b, ...updates } : b));
+  }, []);
+
   const getPublicBeers = useCallback(() => {
     return beers.filter((b) => b.isPublic).sort((a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -182,7 +187,7 @@ export function BeerProvider({ children }: { children: React.ReactNode }) {
   }, [favorites]);
 
   return (
-    <BeerContext.Provider value={{ beers, addBeer, getPublicBeers, getUserBeers, getFavorites, toggleFavorite, isFavorite }}>
+    <BeerContext.Provider value={{ beers, addBeer, updateBeer, getPublicBeers, getUserBeers, getFavorites, toggleFavorite, isFavorite }}>
       {children}
     </BeerContext.Provider>
   );

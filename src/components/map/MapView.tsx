@@ -22,7 +22,7 @@ interface Bar {
 }
 
 export default function MapView() {
-  const { addBeer, beers } = useBeers();
+  const { addBeer, updateBeer, beers } = useBeers();
   const { user, profile } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [bars, setBars] = useState<Bar[]>([]);
@@ -232,22 +232,8 @@ export default function MapView() {
         setBars((prev) => [...prev, newBar]);
       }
 
-      // Upload photo if present — compressed to ~100KB
-      let photoUrl: string | undefined;
-      if (data.photo) {
-        const beerId = `beer-${Date.now()}`;
-        const result = await storageService.uploadBeerPhoto(
-          data.photo,
-          user?.id || 'anon',
-          beerId
-        );
-        if (result.data) {
-          photoUrl = result.data;
-        }
-      }
-
-      // Save beer to shared context
-      addBeer({
+      // Save beer INSTANTLY to shared context (no waiting for photo)
+      const savedBeer = addBeer({
         userId: user?.id || 'current-user',
         userName: profile?.username || user?.email?.split('@')[0] || 'Tú',
         beerName: data.beerName,
@@ -258,7 +244,6 @@ export default function MapView() {
         isDraft: data.isDraft,
         isPublic: data.isPublic,
         notes: data.notes,
-        photoUrl,
         barId,
         barName: data.barName,
         barLat: barCoords?.lat,
@@ -272,14 +257,28 @@ export default function MapView() {
         { duration: 3000, icon: '🍺' }
       );
 
+      // Close immediately — don't wait for photo upload
       setQuickLogOpen(false);
       setNewPinCoords(null);
       setQuickLogBar(null);
       setQuickLogCoords(null);
+
+      // Upload photo in background (non-blocking)
+      if (data.photo) {
+        storageService.uploadBeerPhoto(
+          data.photo,
+          user?.id || 'anon',
+          savedBeer.id
+        ).then((result) => {
+          if (result.data) {
+            updateBeer(savedBeer.id, { photoUrl: result.data });
+          }
+        });
+      }
     } finally {
       setQuickLogLoading(false);
     }
-  }, [addBeer, user, profile]);
+  }, [addBeer, updateBeer, user, profile]);
 
   const handleCloseQuickLog = useCallback(() => {
     setQuickLogOpen(false);
@@ -509,14 +508,14 @@ export default function MapView() {
       {/* Add Beer Here FAB - centered above mobile nav */}
       <button
         onClick={handleAddBeerHere}
-        className="absolute bottom-[116px] md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
+        className="absolute bottom-[118px] md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
       >
         <Crosshair size={22} />
-        <span className="text-sm">Cerveza donde estoy</span>
+        <span className="text-sm">Birra aquí!</span>
       </button>
 
       {/* Hint below FAB */}
-      <p className="absolute bottom-[82px] md:bottom-2 left-1/2 -translate-x-1/2 z-10 text-xs text-slate-600 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow whitespace-nowrap">
+      <p className="absolute bottom-[88px] md:bottom-2 left-1/2 -translate-x-1/2 z-10 text-xs text-slate-600 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow whitespace-nowrap">
         Pulsa dos veces en el mapa para agregar cerveza
       </p>
 

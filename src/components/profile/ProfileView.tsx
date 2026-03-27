@@ -4,16 +4,20 @@ import { UserCheck, UserPlus, Edit, Trophy } from 'lucide-react';
 import BeerLogCard from '../beer-log/BeerLogCard';
 import BadgeCard from '../badges/BadgeCard';
 import EditProfileModal from './EditProfileModal';
+import EditBeerModal from '../beer-log/EditBeerModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useBeers } from '../../context/BeerContext';
+import { storageService } from '../../services/storage.service';
+import type { SavedBeer } from '../../context/BeerContext';
 
 export default function ProfileView() {
   const { userId } = useParams();
   const { user, profile: authProfile } = useAuth();
-  const { getUserBeers, getFavorites, toggleFavorite, isFavorite } = useBeers();
+  const { getUserBeers, getFavorites, toggleFavorite, isFavorite, updateBeer } = useBeers();
   const [activeTab, setActiveTab] = useState<'beers' | 'favorites' | 'lists'>('beers');
   const [isFollowing, setIsFollowing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingBeer, setEditingBeer] = useState<SavedBeer | null>(null);
 
   const isOwnProfile = !userId || userId === user?.id;
   const currentUserId = userId || user?.id || '';
@@ -49,6 +53,18 @@ export default function ProfileView() {
   const handleFavoriteToggle = (beerId: string, _isFav: boolean) => {
     if (currentUserId) {
       toggleFavorite(currentUserId, beerId);
+    }
+  };
+
+  const handleSaveBeer = (beerId: string, updates: Partial<SavedBeer>, newPhoto?: File) => {
+    updateBeer(beerId, updates);
+    // Upload new photo in background
+    if (newPhoto && user?.id) {
+      storageService.uploadBeerPhoto(newPhoto, user.id, beerId).then((result) => {
+        if (result.data) {
+          updateBeer(beerId, { photoUrl: result.data });
+        }
+      });
     }
   };
 
@@ -224,6 +240,7 @@ export default function ProfileView() {
                     tags={beer.tags}
                     isFavorite={isFavorite(currentUserId, beer.id)}
                     onFavoriteToggle={(isFav) => handleFavoriteToggle(beer.id, isFav)}
+                    onEdit={isOwnProfile ? () => setEditingBeer(beer) : undefined}
                   />
                 ))}
               </div>
@@ -275,6 +292,16 @@ export default function ProfileView() {
           )}
         </div>
       </div>
+
+      {/* Edit Beer Modal */}
+      {editingBeer && (
+        <EditBeerModal
+          beer={editingBeer}
+          isOpen={!!editingBeer}
+          onClose={() => setEditingBeer(null)}
+          onSave={handleSaveBeer}
+        />
+      )}
 
       {/* Edit Profile Modal */}
       <EditProfileModal
