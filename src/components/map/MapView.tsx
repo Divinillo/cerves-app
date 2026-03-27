@@ -6,6 +6,9 @@ import { Plus, Search, MapPin, Star, Crosshair } from 'lucide-react';
 import QuickBeerLog from './QuickBeerLog';
 import type { QuickBeerData } from './QuickBeerLog';
 import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
+import { useBeers } from '../../context/BeerContext';
+import { useAuth } from '../../hooks/useAuth';
+import toast from 'react-hot-toast';
 
 interface Bar {
   id: string;
@@ -17,6 +20,8 @@ interface Bar {
 }
 
 export default function MapView() {
+  const { addBeer } = useBeers();
+  const { user, profile } = useAuth();
   const [bars, setBars] = useState<Bar[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null);
@@ -170,21 +175,48 @@ export default function MapView() {
   const handleQuickLogSubmit = useCallback(async (data: QuickBeerData) => {
     setQuickLogLoading(true);
     try {
-      // TODO: Save to Supabase
-      console.log('Quick beer log:', data);
+      // Determine bar info
+      let barId = data.barId;
+      const barCoords = data.newBarCoords;
 
-      // If new bar was created, add it to the local list
-      if (data.newBarCoords && data.barName) {
+      // If new bar was created, add it to the local bar list
+      if (barCoords && data.barName) {
+        barId = `bar-${Date.now()}`;
         const newBar: Bar = {
-          id: `temp-${Date.now()}`,
+          id: barId,
           name: data.barName,
-          latitude: data.newBarCoords.lat,
-          longitude: data.newBarCoords.lng,
+          latitude: barCoords.lat,
+          longitude: barCoords.lng,
           average_rating: data.rating,
           beer_count: 1,
         };
         setBars((prev) => [...prev, newBar]);
       }
+
+      // Save beer to shared context
+      addBeer({
+        userId: user?.id || 'current-user',
+        userName: profile?.username || user?.email?.split('@')[0] || 'Tú',
+        beerName: data.beerName,
+        style: data.style,
+        rating: data.rating,
+        price: data.price,
+        size: data.size,
+        isDraft: data.isDraft,
+        isPublic: data.isPublic,
+        notes: data.notes,
+        barId,
+        barName: data.barName,
+        barLat: barCoords?.lat,
+        barLng: barCoords?.lng,
+      });
+
+      toast.success(
+        data.isPublic
+          ? `${data.beerName} registrada y publicada en La Taberna`
+          : `${data.beerName} guardada en tu perfil`,
+        { duration: 3000, icon: '🍺' }
+      );
 
       setQuickLogOpen(false);
       setNewPinCoords(null);
@@ -193,7 +225,7 @@ export default function MapView() {
     } finally {
       setQuickLogLoading(false);
     }
-  }, []);
+  }, [addBeer, user, profile]);
 
   const handleCloseQuickLog = useCallback(() => {
     setQuickLogOpen(false);

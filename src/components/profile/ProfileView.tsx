@@ -5,28 +5,35 @@ import BeerLogCard from '../beer-log/BeerLogCard';
 import BadgeCard from '../badges/BadgeCard';
 import EditProfileModal from './EditProfileModal';
 import { useAuth } from '../../hooks/useAuth';
+import { useBeers } from '../../context/BeerContext';
 
 export default function ProfileView() {
   const { userId } = useParams();
   const { user, profile: authProfile } = useAuth();
+  const { getUserBeers, getFavorites, toggleFavorite, isFavorite } = useBeers();
   const [activeTab, setActiveTab] = useState<'beers' | 'favorites' | 'lists'>('beers');
   const [isFollowing, setIsFollowing] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Favorites state - track by beer id
-  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set(['beer3', 'beer5']));
-
   const isOwnProfile = !userId || userId === user?.id;
+  const currentUserId = userId || user?.id || '';
+
+  // Get beers from shared context
+  const userBeers = getUserBeers(currentUserId);
+  const favoriteBeers = getFavorites(currentUserId);
+
+  // Unique bars from user's beers
+  const uniqueBars = new Set(userBeers.map((b) => b.barName)).size;
 
   // Use real profile data when available
   const profileData = {
-    userId: userId || user?.id || 'user1',
+    userId: currentUserId,
     username: authProfile?.username || 'Juan López',
     bio: authProfile?.bio || 'Cervecero aficionado desde hace 5 años. IPA lover',
     avatarUrl: authProfile?.avatar_url || '',
     isPublic: authProfile?.is_public ?? true,
-    beerCount: 127,
-    barCount: 34,
+    beerCount: userBeers.length,
+    barCount: uniqueBars,
     followersCount: 523,
     followingCount: 187,
   };
@@ -39,27 +46,10 @@ export default function ProfileView() {
     { id: '5', name: 'Fotógrafo', icon: '📸', earned: false },
   ];
 
-  const allBeers = [
-    { id: 'beer1', beerName: 'Doble Lúpulo IPA', style: 'IPA', barName: 'La Cervecería del Barrio', rating: 4.5, price: 5.5, size: 'caña', isDraft: true },
-    { id: 'beer2', beerName: 'Porter Negra', style: 'Porter', barName: 'El Sótano Cervecero', rating: 4.7, price: 6.0, size: 'pinta', isDraft: true },
-    { id: 'beer3', beerName: 'Alhambra Reserva', style: 'Lager', barName: 'La Tape', rating: 4.3, price: 3.5, size: 'tercio', isDraft: false },
-    { id: 'beer4', beerName: 'West Coast IPA', style: 'IPA', barName: 'Craft & Co.', rating: 4.9, price: 7.0, size: 'pinta', isDraft: true },
-    { id: 'beer5', beerName: 'Blue Moon', style: 'Wheat', barName: 'The Irish Rover', rating: 4.1, price: 5.0, size: 'pinta', isDraft: true },
-    { id: 'beer6', beerName: 'Mahou Clásica', style: 'Lager', barName: 'Bar de siempre', rating: 3.8, price: 2.5, size: 'caña', isDraft: true },
-  ];
-
-  const favoriteBeers = allBeers.filter((b) => favoriteIds.has(b.id));
-
-  const handleFavoriteToggle = (beerId: string, isFav: boolean) => {
-    setFavoriteIds((prev) => {
-      const next = new Set(prev);
-      if (isFav) {
-        next.add(beerId);
-      } else {
-        next.delete(beerId);
-      }
-      return next;
-    });
+  const handleFavoriteToggle = (beerId: string, _isFav: boolean) => {
+    if (currentUserId) {
+      toggleFavorite(currentUserId, beerId);
+    }
   };
 
   const handleSaveProfile = async (data: { username: string; bio: string; isPublic: boolean; avatar?: File }) => {
@@ -187,7 +177,7 @@ export default function ProfileView() {
             >
               Mis Cervezas
               <span className="ml-2 text-sm font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-full">
-                {allBeers.length}
+                {userBeers.length}
               </span>
             </button>
             <button
@@ -217,23 +207,31 @@ export default function ProfileView() {
 
           {/* Tab Content */}
           {activeTab === 'beers' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {allBeers.map((beer) => (
-                <BeerLogCard
-                  key={beer.id}
-                  id={beer.id}
-                  beerName={beer.beerName}
-                  style={beer.style}
-                  barName={beer.barName}
-                  rating={beer.rating}
-                  price={beer.price}
-                  size={beer.size}
-                  isDraft={beer.isDraft}
-                  isFavorite={favoriteIds.has(beer.id)}
-                  onFavoriteToggle={(isFav) => handleFavoriteToggle(beer.id, isFav)}
-                />
-              ))}
-            </div>
+            userBeers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {userBeers.map((beer) => (
+                  <BeerLogCard
+                    key={beer.id}
+                    id={beer.id}
+                    beerName={beer.beerName}
+                    style={beer.style}
+                    barName={beer.barName}
+                    rating={beer.rating}
+                    price={beer.price}
+                    size={beer.size}
+                    isDraft={beer.isDraft}
+                    isFavorite={isFavorite(currentUserId, beer.id)}
+                    onFavoriteToggle={(isFav) => handleFavoriteToggle(beer.id, isFav)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <p className="text-5xl mb-4">🍺</p>
+                <p className="text-slate-500 text-lg">Aún no has registrado cervezas</p>
+                <p className="text-slate-400 text-sm mt-2">Ve al mapa y añade tu primera cerveza</p>
+              </div>
+            )
           )}
 
           {activeTab === 'favorites' && (

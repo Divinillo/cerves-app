@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import Layout from './components/shared/Layout';
 import AuthGuard from './components/auth/AuthGuard';
 import { AuthProvider } from './context/AuthContext';
+import { BeerProvider } from './context/BeerContext';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <Router>
       <AuthProvider>
+        <BeerProvider>
         <Layout>
           <Routes>
             {/* Public Routes */}
@@ -107,6 +109,7 @@ export default function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Layout>
+        </BeerProvider>
         <Toaster position="top-right" />
       </AuthProvider>
     </Router>
