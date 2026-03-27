@@ -496,7 +496,7 @@ export default function MapView() {
       {/* Add Beer Here FAB - centered above mobile nav */}
       <button
         onClick={handleAddBeerHere}
-        className="absolute bottom-28 md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
+        className="absolute bottom-32 md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
       >
         <Crosshair size={22} />
         <span className="text-sm">Cerveza aquí</span>
