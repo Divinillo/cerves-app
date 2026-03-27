@@ -36,7 +36,7 @@ export default function Navbar() {
                   Mapa
                 </Link>
                 <Link to="/feed" className="text-slate-300 hover:text-amber-400 font-medium transition-colors duration-200">
-                  Bibliocerve
+                  La Taberna
                 </Link>
                 <Link to="/rankings" className="text-slate-300 hover:text-amber-400 font-medium transition-colors duration-200">
                   Rankings
@@ -106,7 +106,7 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               <NavIconButton icon={Map} label="Mapa" to="/mapa" />
-              <NavIconButton icon={BookOpen} label="Biblio" to="/feed" />
+              <NavIconButton icon={BookOpen} label="Taberna" to="/feed" />
               <NavIconButton icon={Trophy} label="Rankings" to="/rankings" />
               <NavIconButton icon={User} label="Perfil" to="/perfil" />
               <button
@@ -146,7 +146,7 @@ export default function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                   className="block text-slate-300 hover:text-amber-400 transition-colors font-medium"
                 >
-                  Bibliocerve
+                  La Taberna
                 </Link>
                 <Link
                   to="/rankings"
