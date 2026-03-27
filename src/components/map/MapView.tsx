@@ -490,17 +490,19 @@ export default function MapView() {
         </div>
       </div>
 
-      {/* Hint toast - shows briefly */}
-      <MapHint />
-
       {/* Add Beer Here FAB - centered above mobile nav */}
       <button
         onClick={handleAddBeerHere}
         className="absolute bottom-32 md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
       >
         <Crosshair size={22} />
-        <span className="text-sm">Cerveza aquí</span>
+        <span className="text-sm">Cerveza donde estoy</span>
       </button>
+
+      {/* Hint below FAB */}
+      <p className="absolute bottom-[7.5rem] md:bottom-2 left-1/2 -translate-x-1/2 z-10 text-xs text-slate-600 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow whitespace-nowrap">
+        Pulsa dos veces en el mapa para agregar cerveza
+      </p>
 
       {/* Loading State */}
       {isLoading && (
@@ -528,38 +530,3 @@ export default function MapView() {
   );
 }
 
-/** Small hint that appears once to teach users */
-function MapHint() {
-  const [visible, setVisible] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-
-  useEffect(() => {
-    const shown = sessionStorage.getItem('cerves-map-hint');
-    if (shown) {
-      setDismissed(true);
-      return;
-    }
-    const timer = setTimeout(() => setVisible(true), 2000);
-    const hideTimer = setTimeout(() => {
-      setVisible(false);
-      setDismissed(true);
-      sessionStorage.setItem('cerves-map-hint', '1');
-    }, 6000);
-    return () => {
-      clearTimeout(timer);
-      clearTimeout(hideTimer);
-    };
-  }, []);
-
-  if (dismissed) return null;
-
-  return (
-    <div
-      className={`absolute top-20 left-1/2 -translate-x-1/2 z-10 bg-slate-800/90 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-medium backdrop-blur-sm transition-all duration-500 ${
-        visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2 pointer-events-none'
-      }`}
-    >
-      Doble toque en el mapa o pulsa "Cerveza aquí"
-    </div>
-  );
-}
