@@ -493,14 +493,14 @@ export default function MapView() {
       {/* Add Beer Here FAB - centered above mobile nav */}
       <button
         onClick={handleAddBeerHere}
-        className="absolute bottom-32 md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
+        className="absolute bottom-36 md:bottom-8 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-br from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl px-6 py-3.5 shadow-xl transition-all duration-200 transform hover:scale-105 flex items-center gap-2 font-bold"
       >
         <Crosshair size={22} />
         <span className="text-sm">Cerveza donde estoy</span>
       </button>
 
       {/* Hint below FAB */}
-      <p className="absolute bottom-[7.5rem] md:bottom-2 left-1/2 -translate-x-1/2 z-10 text-xs text-slate-600 bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow whitespace-nowrap">
+      <p className="absolute bottom-[6.5rem] md:bottom-2 left-1/2 -translate-x-1/2 z-10 text-xs text-slate-600 bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow whitespace-nowrap">
         Pulsa dos veces en el mapa para agregar cerveza
       </p>
 
