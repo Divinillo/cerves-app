@@ -4,6 +4,8 @@ import Layout from './components/shared/Layout';
 import AuthGuard from './components/auth/AuthGuard';
 import { AuthProvider } from './context/AuthContext';
 import { BeerProvider } from './context/BeerContext';
+import OnboardingWizard from './components/onboarding/OnboardingWizard';
+import { useAuth } from './hooks/useAuth';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -19,12 +21,22 @@ import ListsPage from './pages/ListsPage';
 import ListDetailPage from './pages/ListDetailPage';
 import NotFoundPage from './pages/NotFoundPage';
 
-export default function App() {
+function AppContent() {
+  const { user, profile, onboardingDone, completeOnboarding } = useAuth();
+
+  // Show wizard for logged-in users who haven't completed onboarding
+  const showWizard = !!user && !onboardingDone;
+
   return (
-    <Router>
-      <AuthProvider>
-        <BeerProvider>
-        <Layout>
+    <>
+      {showWizard && (
+        <OnboardingWizard
+          onComplete={completeOnboarding}
+          defaultNickname={profile?.username || user?.email?.split('@')[0] || ''}
+        />
+      )}
+      <BeerProvider>
+      <Layout>
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
@@ -110,6 +122,15 @@ export default function App() {
           </Routes>
         </Layout>
         </BeerProvider>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <AppContent />
         <Toaster position="top-right" />
       </AuthProvider>
     </Router>

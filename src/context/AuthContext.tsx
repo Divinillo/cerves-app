@@ -7,11 +7,13 @@ export interface AuthContextType {
   user: any;
   profile: Profile | null;
   loading: boolean;
+  onboardingDone: boolean;
   signUp: (email: string, password: string, username: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
   signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<any>;
   resetPassword: (email: string) => Promise<any>;
+  completeOnboarding: (nickname: string) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +26,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    try { return localStorage.getItem('cerves_onboarding_done') === 'true'; }
+    catch { return false; }
+  });
 
   // Fetch profile when user changes
   const fetchProfile = useCallback(async (userId: string) => {
@@ -118,15 +124,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return await authService.resetPassword(email);
   };
 
+  const completeOnboarding = (nickname: string) => {
+    // Save nickname to profile (locally for now, Supabase later)
+    setProfile((prev) => prev ? { ...prev, username: nickname } : {
+      id: user?.id || '',
+      username: nickname,
+      is_public: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+    setOnboardingDone(true);
+    try { localStorage.setItem('cerves_onboarding_done', 'true'); } catch {}
+    // Also try to save to Supabase
+    if (user?.id) {
+      supabase.from('profiles').upsert({
+        id: user.id,
+        username: nickname,
+        updated_at: new Date().toISOString(),
+      }).then(() => {});
+    }
+  };
+
   const value: AuthContextType = {
     user,
     profile,
     loading,
+    onboardingDone,
     signUp,
     signIn,
     signInWithGoogle,
     signOut,
     resetPassword,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
