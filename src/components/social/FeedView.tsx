@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { RefreshCw, Star, MapPin, Heart, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { RefreshCw, Star, MapPin, Heart, MessageSquare, Navigation } from 'lucide-react';
 import { useBeers } from '../../context/BeerContext';
 import { useAuth } from '../../hooks/useAuth';
 import type { SavedBeer } from '../../context/BeerContext';
@@ -20,6 +21,7 @@ const getTimeAgo = (timestamp: string) => {
 export default function FeedView() {
   const { getPublicBeers, toggleFavorite, isFavorite } = useBeers();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
@@ -41,6 +43,14 @@ export default function FeedView() {
   const handleToggleFav = (beerId: string) => {
     if (user?.id) {
       toggleFavorite(user.id, beerId);
+    }
+  };
+
+  const handleGoToMap = (post: SavedBeer) => {
+    if (post.barLat && post.barLng) {
+      navigate(`/mapa?lat=${post.barLat}&lng=${post.barLng}&beer=${post.id}`);
+    } else {
+      navigate('/mapa');
     }
   };
 
@@ -86,6 +96,7 @@ export default function FeedView() {
               post={post}
               isLiked={user?.id ? isFavorite(user.id, post.id) : false}
               onLike={() => handleToggleFav(post.id)}
+              onGoToMap={() => handleGoToMap(post)}
             />
           ))}
         </div>
@@ -117,10 +128,12 @@ function TavernaPost({
   post,
   isLiked,
   onLike,
+  onGoToMap,
 }: {
   post: SavedBeer;
   isLiked: boolean;
   onLike: () => void;
+  onGoToMap: () => void;
 }) {
   const timeAgo = getTimeAgo(post.createdAt);
 
@@ -217,6 +230,15 @@ function TavernaPost({
           <Heart size={20} className={isLiked ? 'fill-red-500' : ''} />
           {isLiked ? 'Te gusta' : 'Me gusta'}
         </button>
+        {post.barLat && post.barLng && (
+          <button
+            onClick={onGoToMap}
+            className="flex items-center gap-1.5 text-sm font-semibold text-slate-400 hover:text-amber-600 transition-all"
+          >
+            <Navigation size={18} />
+            Ver en mapa
+          </button>
+        )}
       </div>
     </div>
   );

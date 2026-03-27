@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Plus, Search, MapPin, Star, Crosshair } from 'lucide-react';
 import QuickBeerLog from './QuickBeerLog';
 import type { QuickBeerData } from './QuickBeerLog';
@@ -23,6 +23,7 @@ interface Bar {
 export default function MapView() {
   const { addBeer, beers } = useBeers();
   const { user, profile } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [bars, setBars] = useState<Bar[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedBar, setSelectedBar] = useState<Bar | null>(null);
@@ -62,6 +63,29 @@ export default function MapView() {
       return b.userId === currentUserId || b.isPublic;
     });
   }, [beers, user?.id]);
+
+  // Fly to beer from URL params (e.g., from La Taberna "Ver en mapa")
+  useEffect(() => {
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    const beerId = searchParams.get('beer');
+    if (lat && lng) {
+      const latNum = parseFloat(lat);
+      const lngNum = parseFloat(lng);
+      if (!isNaN(latNum) && !isNaN(lngNum)) {
+        setViewState((prev) => ({ ...prev, latitude: latNum, longitude: lngNum, zoom: 16 }));
+        // Auto-select the beer popup if we have the id
+        if (beerId) {
+          const found = beers.find((b) => b.id === beerId);
+          if (found) {
+            setSelectedBeer(found);
+          }
+        }
+        // Clean up URL params
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Track user location continuously
   useEffect(() => {
