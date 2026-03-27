@@ -9,6 +9,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useBeers } from '../../context/BeerContext';
 import { storageService } from '../../services/storage.service';
 import type { SavedBeer } from '../../context/BeerContext';
+import toast from 'react-hot-toast';
 
 export default function ProfileView() {
   const { userId } = useParams();
@@ -63,6 +64,11 @@ export default function ProfileView() {
       storageService.uploadBeerPhoto(newPhoto, user.id, beerId).then((result) => {
         if (result.data) {
           updateBeer(beerId, { photoUrl: result.data });
+        } else if (result.moderation) {
+          toast.error(result.error?.message || 'Foto rechazada: contenido inapropiado', {
+            duration: 5000,
+            icon: '🚫',
+          });
         }
       });
     }

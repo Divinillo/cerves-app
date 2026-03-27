@@ -1,15 +1,18 @@
 import { supabase } from './supabase';
 import { compressImage } from '../utils/imageCompressor';
+import { moderateImage } from './moderation.service';
 
 export interface ServiceResponse<T> {
   data?: T;
   error?: Error;
+  moderation?: boolean; // true if rejected by moderation
 }
 
 export const storageService = {
   /**
-   * Upload a beer log photo — compresses first to ~80-150KB
-   * to maximize Supabase free tier (1GB → ~7,000-12,000 photos)
+   * Upload a beer log photo — compresses, moderates, then uploads.
+   * Compression: ~3-5MB → ~80-150KB (maximize free tier)
+   * Moderation: Google Vision SafeSearch (1,000 free/month)
    */
   async uploadBeerPhoto(
     file: File,
@@ -17,9 +20,19 @@ export const storageService = {
     beerLogId: string
   ): Promise<ServiceResponse<string>> {
     try {
-      // Compress: ~3-5MB original → ~80-150KB JPEG
+      // 1. Compress: ~3-5MB original → ~80-150KB JPEG
       const compressed = await compressImage(file);
 
+      // 2. Moderate: check for inappropriate content
+      const modResult = await moderateImage(compressed);
+      if (!modResult.safe) {
+        return {
+          error: new Error(modResult.reason || 'Imagen rechazada por contenido inapropiado'),
+          moderation: true,
+        };
+      }
+
+      // 3. Upload to Supabase Storage
       const fileName = `${userId}/${beerLogId}-${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage

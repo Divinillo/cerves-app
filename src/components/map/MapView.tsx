@@ -272,6 +272,11 @@ export default function MapView() {
         ).then((result) => {
           if (result.data) {
             updateBeer(savedBeer.id, { photoUrl: result.data });
+          } else if (result.moderation) {
+            toast.error(result.error?.message || 'Foto rechazada: contenido inapropiado', {
+              duration: 5000,
+              icon: '🚫',
+            });
           }
         });
       }
