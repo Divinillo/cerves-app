@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/shared/Layout';
 import AuthGuard from './components/auth/AuthGuard';
@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import { BeerProvider } from './context/BeerContext';
 import OnboardingWizard from './components/onboarding/OnboardingWizard';
 import { useAuth } from './hooks/useAuth';
+import AuthCallback from './components/auth/AuthCallback';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -42,6 +43,7 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<SignUpPage />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
 
             {/* Protected Routes */}
             <Route
