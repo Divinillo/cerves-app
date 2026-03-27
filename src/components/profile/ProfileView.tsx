@@ -220,6 +220,8 @@ export default function ProfileView() {
                     price={beer.price}
                     size={beer.size}
                     isDraft={beer.isDraft}
+                    photoUrl={beer.photoUrl}
+                    tags={beer.tags}
                     isFavorite={isFavorite(currentUserId, beer.id)}
                     onFavoriteToggle={(isFav) => handleFavoriteToggle(beer.id, isFav)}
                   />
@@ -248,6 +250,8 @@ export default function ProfileView() {
                     price={beer.price}
                     size={beer.size}
                     isDraft={beer.isDraft}
+                    photoUrl={beer.photoUrl}
+                    tags={beer.tags}
                     isFavorite={true}
                     onFavoriteToggle={(isFav) => handleFavoriteToggle(beer.id, isFav)}
                   />

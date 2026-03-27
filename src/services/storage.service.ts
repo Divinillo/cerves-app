@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { compressImage } from '../utils/imageCompressor';
 
 export interface ServiceResponse<T> {
   data?: T;
@@ -7,7 +8,8 @@ export interface ServiceResponse<T> {
 
 export const storageService = {
   /**
-   * Upload a beer log photo
+   * Upload a beer log photo — compresses first to ~80-150KB
+   * to maximize Supabase free tier (1GB → ~7,000-12,000 photos)
    */
   async uploadBeerPhoto(
     file: File,
@@ -15,12 +17,18 @@ export const storageService = {
     beerLogId: string
   ): Promise<ServiceResponse<string>> {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${beerLogId}-${Date.now()}.${fileExt}`;
+      // Compress: ~3-5MB original → ~80-150KB JPEG
+      const compressed = await compressImage(file);
+
+      const fileName = `${userId}/${beerLogId}-${Date.now()}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from('beer-photos')
-        .upload(fileName, file, { upsert: false });
+        .upload(fileName, compressed, {
+          contentType: 'image/jpeg',
+          cacheControl: '31536000',
+          upsert: false,
+        });
 
       if (uploadError) {
         return { error: uploadError };

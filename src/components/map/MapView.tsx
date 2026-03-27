@@ -9,6 +9,7 @@ import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import { useBeers } from '../../context/BeerContext';
 import type { SavedBeer } from '../../context/BeerContext';
 import { useAuth } from '../../hooks/useAuth';
+import { storageService } from '../../services/storage.service';
 import toast from 'react-hot-toast';
 
 interface Bar {
@@ -231,6 +232,20 @@ export default function MapView() {
         setBars((prev) => [...prev, newBar]);
       }
 
+      // Upload photo if present — compressed to ~100KB
+      let photoUrl: string | undefined;
+      if (data.photo) {
+        const beerId = `beer-${Date.now()}`;
+        const result = await storageService.uploadBeerPhoto(
+          data.photo,
+          user?.id || 'anon',
+          beerId
+        );
+        if (result.data) {
+          photoUrl = result.data;
+        }
+      }
+
       // Save beer to shared context
       addBeer({
         userId: user?.id || 'current-user',
@@ -243,6 +258,7 @@ export default function MapView() {
         isDraft: data.isDraft,
         isPublic: data.isPublic,
         notes: data.notes,
+        photoUrl,
         barId,
         barName: data.barName,
         barLat: barCoords?.lat,

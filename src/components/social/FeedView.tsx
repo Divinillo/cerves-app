@@ -153,6 +153,18 @@ function TavernaPost({
         </span>
       </div>
 
+      {/* Beer photo */}
+      {post.photoUrl && (
+        <div className="px-5 pb-3">
+          <img
+            src={post.photoUrl}
+            alt={post.beerName}
+            className="w-full h-52 object-cover rounded-xl"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       {/* Beer name + style hero */}
       <div className="px-5 pb-3">
         <h3 className="text-xl font-extrabold text-slate-800 mb-1.5">{post.beerName}</h3>
