@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import Map, { Marker, Popup, NavigationControl, GeolocateControl } from 'react-map-gl/maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Link } from 'react-router-dom';
@@ -7,6 +7,7 @@ import QuickBeerLog from './QuickBeerLog';
 import type { QuickBeerData } from './QuickBeerLog';
 import type { MapLayerMouseEvent } from 'react-map-gl/maplibre';
 import { useBeers } from '../../context/BeerContext';
+import type { SavedBeer } from '../../context/BeerContext';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -20,7 +21,7 @@ interface Bar {
 }
 
 export default function MapView() {
-  const { addBeer } = useBeers();
+  const { addBeer, beers } = useBeers();
   const { user, profile } = useAuth();
   const [bars, setBars] = useState<Bar[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -48,6 +49,19 @@ export default function MapView() {
   // Double click detection
   const lastClickTime = useRef<number>(0);
   const lastClickCoords = useRef<{ x: number; y: number } | null>(null);
+
+  // Selected beer for popup
+  const [selectedBeer, setSelectedBeer] = useState<SavedBeer | null>(null);
+
+  // All beers visible on map: user's own (all) + others' public, with coordinates
+  const mapBeers = useMemo(() => {
+    const currentUserId = user?.id || '';
+    return beers.filter((b) => {
+      if (!b.barLat || !b.barLng) return false;
+      // Show own beers always, others only if public
+      return b.userId === currentUserId || b.isPublic;
+    });
+  }, [beers, user?.id]);
 
   // Track user location continuously
   useEffect(() => {
@@ -300,6 +314,84 @@ export default function MapView() {
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-emerald-500 rotate-45 border-r-2 border-b-2 border-white"></div>
             </div>
           </Marker>
+        )}
+
+        {/* Beer markers — user's own + public */}
+        {mapBeers.map((beer) => {
+          const isOwn = beer.userId === (user?.id || '');
+          return (
+            <Marker
+              key={beer.id}
+              longitude={beer.barLng!}
+              latitude={beer.barLat!}
+              anchor="bottom"
+              onClick={(e) => {
+                e.originalEvent.stopPropagation();
+                setSelectedBeer(beer);
+                setSelectedBar(null);
+              }}
+            >
+              <div className="cursor-pointer group">
+                <div className={`relative flex items-center justify-center w-9 h-9 rounded-full shadow-md border-2 border-white transition-all duration-200 group-hover:scale-110 group-hover:shadow-lg ${
+                  isOwn
+                    ? 'bg-gradient-to-br from-emerald-400 to-green-500'
+                    : 'bg-gradient-to-br from-purple-400 to-indigo-500'
+                }`}>
+                  <span className="text-sm">{isOwn ? '🍺' : '🍻'}</span>
+                </div>
+              </div>
+            </Marker>
+          );
+        })}
+
+        {/* Beer popup */}
+        {selectedBeer && selectedBeer.barLat && selectedBeer.barLng && (
+          <Popup
+            longitude={selectedBeer.barLng}
+            latitude={selectedBeer.barLat}
+            anchor="bottom"
+            offset={16}
+            onClose={() => setSelectedBeer(null)}
+            closeButton={true}
+            closeOnClick={false}
+            className="cerves-popup"
+          >
+            <div className="p-3 min-w-[220px] max-w-[280px]">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <h3 className="font-bold text-slate-800 text-base leading-tight">{selectedBeer.beerName}</h3>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap flex-shrink-0" style={{
+                  background: selectedBeer.userId === (user?.id || '') ? '#d1fae5' : '#ede9fe',
+                  color: selectedBeer.userId === (user?.id || '') ? '#065f46' : '#5b21b6',
+                }}>{selectedBeer.userId === (user?.id || '') ? 'Tuya' : selectedBeer.userName}</span>
+              </div>
+              <p className="text-xs text-amber-600 font-medium mb-1">{selectedBeer.style}</p>
+              {selectedBeer.barName && (
+                <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                  <MapPin size={11} /> {selectedBeer.barName}
+                </p>
+              )}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={13} className={i < selectedBeer.rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'} />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-slate-600">{selectedBeer.price.toFixed(2)}€</span>
+                <span className="text-xs text-slate-400">{selectedBeer.size}</span>
+                <span className="text-xs text-slate-400">{selectedBeer.isDraft ? '🍺' : '🍶'}</span>
+              </div>
+              {selectedBeer.notes && (
+                <p className="text-xs text-slate-600 italic line-clamp-2 mb-2">"{selectedBeer.notes}"</p>
+              )}
+              {selectedBeer.tags && selectedBeer.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedBeer.tags.map((tag) => (
+                    <span key={tag} className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">#{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Popup>
         )}
 
         {selectedBar && (
