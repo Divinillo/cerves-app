@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, User, Beer, Map, Rss, Trophy } from 'lucide-react';
+import { LogOut, User, Beer, Map, BookOpen, Trophy } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Navbar() {
@@ -36,7 +36,7 @@ export default function Navbar() {
                   Mapa
                 </Link>
                 <Link to="/feed" className="text-slate-300 hover:text-amber-400 font-medium transition-colors duration-200">
-                  Feed
+                  Bibliocerve
                 </Link>
                 <Link to="/rankings" className="text-slate-300 hover:text-amber-400 font-medium transition-colors duration-200">
                   Rankings
@@ -106,7 +106,7 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               <NavIconButton icon={Map} label="Mapa" to="/mapa" />
-              <NavIconButton icon={Rss} label="Feed" to="/feed" />
+              <NavIconButton icon={BookOpen} label="Biblio" to="/feed" />
               <NavIconButton icon={Trophy} label="Rankings" to="/rankings" />
               <NavIconButton icon={User} label="Perfil" to="/perfil" />
               <button
@@ -146,7 +146,7 @@ export default function Navbar() {
                   onClick={() => setIsMenuOpen(false)}
                   className="block text-slate-300 hover:text-amber-400 transition-colors font-medium"
                 >
-                  Feed
+                  Bibliocerve
                 </Link>
                 <Link
                   to="/rankings"

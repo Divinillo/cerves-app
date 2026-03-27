@@ -22,6 +22,7 @@ export interface QuickBeerData {
   size: 'caña' | 'doble' | 'pinta' | 'tercio' | 'quinto';
   isDraft: boolean;
   isPublic: boolean;
+  notes: string;
   photo?: File;
   /** If creating a new bar at these coords */
   newBarCoords?: { lat: number; lng: number };
@@ -58,6 +59,7 @@ export default function QuickBeerLog({
   const [size, setSize] = useState<QuickBeerData['size']>('caña');
   const [isDraft, setIsDraft] = useState(true);
   const [isPublic, setIsPublic] = useState(true);
+  const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [showStylePicker, setShowStylePicker] = useState(false);
@@ -89,6 +91,7 @@ export default function QuickBeerLog({
       setSize('caña');
       setIsDraft(true);
       setIsPublic(true);
+      setNotes('');
       setPhoto(null);
       setPhotoPreview(null);
       setShowStylePicker(false);
@@ -118,6 +121,7 @@ export default function QuickBeerLog({
       size,
       isDraft,
       isPublic,
+      notes: notes.trim(),
       photo: photo || undefined,
       newBarCoords: !barId ? mapCoords : undefined,
     });
@@ -315,6 +319,17 @@ export default function QuickBeerLog({
                 Botella
               </button>
             </div>
+          </div>
+
+          {/* Notes */}
+          <div className="mb-4">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Notas: aroma, sabor, con quién estabas..."
+              rows={2}
+              className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:border-amber-400 focus:bg-white transition-all resize-none"
+            />
           </div>
 
           {/* Photo + Visibility row */}
